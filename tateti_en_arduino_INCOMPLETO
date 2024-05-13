@@ -16,8 +16,8 @@ uint8_t rowPins[ROWS] = { 19, 18, 5, 17 };
 void init_matriz (char keys [COLS][ROWS]);
 void init_game (char keys [COLS][ROWS]);
 int llenar_matriz (char keys [COLS][ROWS], char turno,int num);
-void first_game (char keys [COLS][ROWS]);
-void check_matriz (char keys [COLS][ROWS]);
+void first_game (char keys [COLS][ROWS]); // eliminada
+void check_matriz (char keys [COLS][ROWS]); // no la empecé
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 int cant = 0 ;
