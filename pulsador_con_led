@@ -1,0 +1,30 @@
+#include <stdio.h>
+#include "driver/gpio.h"
+#include "freertos/freeRTOS.h"
+#include "freertos/task.h"
+
+#define pulsador 15
+#define led 2
+
+void app_main ()
+{
+
+	gpio_set_direction( 15, GPIO_MODE_INPUT );
+	gpio_set_pull_mode(15, GPIO_PULLDOWN_ONLY);
+
+	gpio_set_direction (2, GPIO_MODE_OUTPUT);
+
+	while (1)
+	{
+
+		//bool level;
+
+		while (gpio_get_level (15) == 1)
+		{
+			gpio_set_level (2, 1);
+		}
+
+		gpio_set_level (2, 0);
+
+	}
+}
