@@ -1,0 +1,65 @@
+#include <stdio.h>
+#include "driver/gpio.h"
+#include "freertos/freeRTOS.h"
+#include "freertos/task.h"
+#include "esp_timer.h"
+
+#define pulsador 15
+#define led 4
+
+float  t_on = 0 , t_off = 0 , ttotal = 100, tiempo = 0 ;
+int aux = 0;
+bool level = 0 ;
+
+esp_err_t blink_led (float ttotal);
+
+void app_main ()
+{
+
+	gpio_set_direction( 15, GPIO_MODE_INPUT );
+	gpio_set_pull_mode(15, GPIO_PULLDOWN_ONLY);
+
+	gpio_set_direction (4, GPIO_MODE_OUTPUT);
+
+
+	while (1)
+	{
+
+		blink_led (ttotal);
+
+		if (gpio_get_level (15) == 1 && aux == 0)
+		{
+
+			t_on = esp_timer_get_time ();
+			aux = 1;
+		}
+
+		if (gpio_get_level (15) == 0 && aux == 1)
+		{
+
+			t_off = esp_timer_get_time ();
+			aux = 0;
+
+			ttotal = (t_off - t_on)/ 10000  ;
+					printf ("tiempo transcurrido: %f\n" , ttotal);
+					printf ("tiempo on: %f\n" , t_on /1000000);
+					printf ("tiempo off: %f\n" , t_off/1000000);
+		}
+
+
+	}
+}
+
+esp_err_t blink_led (float ttotal )
+{
+
+	level =! level ;
+	gpio_set_level (4, level);
+
+	vTaskDelay (ttotal ); // portTICK_PERIOD_MS;
+	tiempo = ttotal;
+	printf ("el tiempo es: %f\n", tiempo);
+
+
+	return ESP_OK;
+}
