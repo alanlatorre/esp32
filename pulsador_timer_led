@@ -63,3 +63,99 @@ esp_err_t blink_led (float ttotal )
 
 	return ESP_OK;
 }
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+#include <stdio.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include "freertos/freeRTOS.h"
+#include "freertos/task.h"
+#include "driver/gpio.h"
+#include "esp_timer.h"
+
+#define pulsador 15;
+#define led 8;
+
+enum estados
+{
+	suelto,
+	pulsando,
+	apretado,
+	soltando,
+} ;
+
+typedef enum estados estado ;
+
+struct fsm
+{
+	uint32_t tiempo;
+	estado estado_actual;
+	bool estado_led;
+} ;
+
+typedef struct fsm fsm ;
+
+fsm.tiempo = 1000 ;
+fsm.estado_actual = suelto ;
+
+bool leer_pin (void)
+{
+	return (gpio_get_level (15));
+}
+
+uint32_t leer_tiempo (void)
+{
+	return (esp_timer_get_time (void));
+}
+
+void app_main(void)
+{
+	bool entrada;
+
+    while (true)
+    {
+    	entrada = leer_pin ();
+
+    	switch (fsm.estado_actual)
+    	{
+    		case suelto:
+    			if (entrada == 1)
+    				{
+    				fsm.estado_actual = pulsando;
+    				leer_tiempo ();
+    				}
+    			break;
+
+    		case pulsando:
+    			if (entrada == 0)
+    				{
+    				fsm.estado_actual = suelto;
+    				leer_tiempo ();
+    				}
+    			else if (entrada == 1)
+    				fsm.estado_actual = apretado;
+
+    			break;
+
+    		case apretado:
+    			if (entrada == 0)
+    				{
+    				fsm.estado_actual = soltando;
+    				leer_tiempo ();
+    				}
+    			break;
+
+    		case soltando:
+    			if (entrada == 0)
+    				fsm.estado_actual = suelto;
+
+    			else if (entrada == 1)
+    				fsm.estado_actual = apretado;
+
+    			break;
+    	}
+
+
+    }
+}
