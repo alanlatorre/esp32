@@ -27,19 +27,10 @@ struct fsm
 struct fsm fsm = { .estado_actual = suelto};
 
 bool level = 0 ;
-uint32_t tiempo;
-
 
 bool leer_pin (void)
 {
 	return (gpio_get_level (15));
-}
-
-float leer_tiempo (void)
-{
-	tiempo = esp_timer_get_time ()/ 1000 ;
-
-	return tiempo;
 }
 
 void periodo (float ttotal)
