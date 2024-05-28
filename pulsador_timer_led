@@ -22,9 +22,12 @@ typedef enum estados estado ;
 struct fsm
 {
 	estado estado_actual;
+	bool estado_led;
 } ;
 
-struct fsm fsm = { .estado_actual = suelto};
+struct fsm fsm = { .estado_actual = suelto, .estado_led = 0};
+
+
 
 bool level = 0 ;
 
@@ -36,17 +39,16 @@ bool leer_pin (void)
 void periodo (float ttotal)
 {
 
-		printf ("ttotal dentro es: %f\n", ttotal); //muestreo para verificar en monitor
-		gpio_set_level (4, level);
-		level =!level ;
-		vTaskDelay(pdMS_TO_TICKS(ttotal));
+		printf ("ttotal dentro es: %f\n %d", ttotal, fsm.estado_led); //muestreo para verificar en monitor
+		gpio_set_level (4, fsm.estado_led);
+		fsm.estado_led =!fsm.estado_led ;
 }
 
 
 void app_main(void)
 {
-	bool entrada;
-	float t_on= 0, t_off = 0;
+	bool entrada, primer_periodo = 1;
+	float t_on= 0, t_off = 0, t_actual = 0, t_actualizado = 0;
 	float ttotal = 1000;
 
 	gpio_set_direction (15, GPIO_MODE_INPUT);
@@ -56,9 +58,7 @@ void app_main(void)
 
     while (true)
     {
-
-    	if (t_on==0)
-    		periodo (ttotal);
+    	t_actual = esp_timer_get_time () / 1000;
 
     	entrada = leer_pin ();
 
@@ -68,8 +68,9 @@ void app_main(void)
     			if (entrada == 1)
     				{
     				fsm.estado_actual = pulsando;
-    				t_on = esp_timer_get_time () /100;
-    				t_off = 0;
+    				t_on = esp_timer_get_time () /1000;
+    				primer_periodo = 0;
+
     				}
     			break;
 
@@ -94,7 +95,8 @@ void app_main(void)
     			if (entrada == 0)
     			{
     				fsm.estado_actual = suelto;
-    				t_off = esp_timer_get_time () /100;
+    				t_off = esp_timer_get_time () /1000;
+    				ttotal = t_off - t_on ;
     			}
     			else
     				fsm.estado_actual = apretado;
@@ -102,14 +104,22 @@ void app_main(void)
     			break;
     	}
 
-    	if (t_on>0 && t_off>0)
+
+
+    	if (t_actual - t_actualizado > ttotal)
     	{
-    	ttotal = t_off - t_on ;
+    		t_actualizado = t_actual;
+
+    	if (primer_periodo == 1)
+    	{
+    		ttotal = 1000;
+    	}
+
+    	periodo (ttotal);
+
     	//printf ("t_on es: %0.2f\n",t_on);
     	//printf ("t_off es: %0.2f\n", t_off);
     	//printf ("ttotal es: %0.2f\n", ttotal); muestreo para verificar datos
-
-    	periodo (ttotal/ 10);
     	}
 
     	vTaskDelay(pdMS_TO_TICKS(9));
@@ -117,5 +127,3 @@ void app_main(void)
 
     }
 }
-    	
-
